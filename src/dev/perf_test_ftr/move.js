@@ -17,17 +17,13 @@
  * under the License.
  */
 
+/* eslint no-unused-vars: 0 */
+
 import { run, createFlagError } from '@kbn/dev-utils';
 
 export const relocateBenchmarkApp = _ => {
   run(({ flags, log }) => {
-    if (flags.kibanaParentPath === '')
-      throw createFlagError('Please provide a single --kibanaParentPath flag');
-    if (flags.benchmarkAppPath === '')
-      throw createFlagError('Please provide a single --benchmarkAppPath flag');
-    if (flags.verbose) log.verbose(`### Verbose logging enabled`);
-
-    const { kibanaParentPath, benchmarkAppPath } = flags;
+    const { kibanaParentPath, benchmarkAppPath } = administrivia(flags, log);
     relocate(kibanaParentPath)(benchmarkAppPath)(log);
   }, description());
 };
@@ -54,4 +50,13 @@ function relocate(kibanaParentPath) {
     log.verbose(`\n### kibanaParentPath: \n\t${kibanaParentPath}`);
     log.verbose(`\n### benchmarkAppPath: \n\t${benchmarkAppPath}`);
   };
+}
+
+function administrivia(flags, log) {
+  if (flags.kibanaParentPath === '')
+    throw createFlagError('Please provide a single --kibanaParentPath flag');
+  if (flags.benchmarkAppPath === '')
+    throw createFlagError('Please provide a single --benchmarkAppPath flag');
+  if (flags.verbose) log.verbose(`### Verbose logging enabled`);
+  return flags;
 }

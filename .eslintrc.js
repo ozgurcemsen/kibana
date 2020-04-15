@@ -858,18 +858,6 @@ module.exports = {
     },
 
     /**
-     * Perf Test (FTR) overrides
-     */
-    {
-      files: [
-        'src/dev/perf_test_ftr/**/*.{js}',
-      ],
-      rules: {
-        'no-unused-vars': 'off',
-      },
-    },
-
-    /**
      * Prettier disables all conflicting rules, listing as last override so it takes precedence
      */
     {
