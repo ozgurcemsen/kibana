@@ -25,37 +25,45 @@ import * as jetpack from 'fs-jetpack';
 export const relocateBenchmarkApp = _ => {
   run(({ flags, log }) => {
     const { kibanaParentPath, benchmarkAppPath } = administrivia(flags, log);
-    relocate(kibanaParentPath)(benchmarkAppPath)(log);
-  }, description());
+    const fallback = 'perf_test_ftr_external';
+    relocate(flags.externalDirName || fallback)(kibanaParentPath)(benchmarkAppPath)(log);
+  }, descriptionAndFlags());
 };
 
 const flags = {
-  string: ['kibanaParentPath', 'verbose', 'benchmarkAppPath'],
+  string: ['kibanaParentPath', 'verbose', 'benchmarkAppPath', 'externalDirName'],
   help: `
 --kibanaParentPath Required, path to kibana's parent directory
 --benchmarkAppPath Required, path to benchmark's directory
 `,
 };
 
-function description() {
+function descriptionAndFlags() {
   return {
     description: `
 Move the benchmark 'app' to live next to kibana, since the app is destructive
+
+Example(s):
+
+node scripts/perf_test_ftr.js  --verbose --kibanaParentPath /Users/tre/development/projects --benchmarkAppPath /Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark
+
+node scripts/perf_test_ftr.js  --verbose --kibanaParentPath /Users/tre/development/projects --benchmarkAppPath /Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark --externalDirName perf_test_ftr_external
+
+
+# Both of the above will copy into /Users/tre/development/projects/perf_test_ftr_external/benchmark
 `,
     flags,
   };
 }
 
-function relocate(kibanaParentPath) {
-  return benchmarkAppPath => async log => {
-    log.verbose(`\n### kibanaParentPath: \n\t${kibanaParentPath}`);
-    log.verbose(`\n### benchmarkAppPath: \n\t${benchmarkAppPath}`);
-
-    await jetpack.copyAsync(
-      '/Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark',
-      '/Users/tre/development/projects/perf_test_external/benchmark',
-      { overwrite: true }
+function relocate(externalDirName) {
+  return kibanaParentPath => benchmarkAppPath => log => {
+    const dest = `${kibanaParentPath}/${externalDirName}/benchmark`;
+    log.verbose(
+      `\n### Relocating 'benchmark app',\nfrom: \n\t${benchmarkAppPath}\nto: \n\t${dest}`
     );
+
+    (async _ => await jetpack.copyAsync(benchmarkAppPath, dest, { overwrite: true }))();
   };
 }
 
