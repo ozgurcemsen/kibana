@@ -18,4 +18,4 @@
  */
 
 require('../src/setup_node_env');
-require('../src/dev/perf_test_ftr/move').relocateBenchmarkApp();
+require('../src/dev/perf_test_ftr/relocate').relocateBenchmarkApp();
