@@ -20,6 +20,7 @@
 /* eslint no-unused-vars: 0 */
 
 import { run, createFlagError } from '@kbn/dev-utils';
+import * as jetpack from 'fs-jetpack';
 
 export const relocateBenchmarkApp = _ => {
   run(({ flags, log }) => {
@@ -46,9 +47,15 @@ Move the benchmark 'app' to live next to kibana, since the app is destructive
 }
 
 function relocate(kibanaParentPath) {
-  return benchmarkAppPath => log => {
+  return benchmarkAppPath => async log => {
     log.verbose(`\n### kibanaParentPath: \n\t${kibanaParentPath}`);
     log.verbose(`\n### benchmarkAppPath: \n\t${benchmarkAppPath}`);
+
+    await jetpack.copyAsync(
+      '/Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark',
+      '/Users/tre/development/projects/perf_test_external/benchmark',
+      { overwrite: true }
+    );
   };
 }
 
@@ -58,5 +65,6 @@ function administrivia(flags, log) {
   if (flags.benchmarkAppPath === '')
     throw createFlagError('Please provide a single --benchmarkAppPath flag');
   if (flags.verbose) log.verbose(`### Verbose logging enabled`);
+
   return flags;
 }
