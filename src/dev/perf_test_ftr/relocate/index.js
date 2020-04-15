@@ -27,7 +27,7 @@ export const relocateBenchmarkApp = _ => {
     const { kibanaParentPath, benchmarkAppPath } = administrivia(flags, log);
     const fallback = 'perf_test_ftr_external';
     relocate(flags.externalDirName || fallback)(kibanaParentPath)(benchmarkAppPath)(log);
-  }, descriptionAndFlags());
+  }, descriptionAndFlags(script()));
 };
 
 const flags = {
@@ -38,16 +38,31 @@ const flags = {
 `,
 };
 
-function descriptionAndFlags() {
+function script() {
+  return [
+    'node',
+    'scripts/perf_test_ftr.js',
+    '--verbose',
+    '--kibanaParentPath',
+    '/Users/tre/development/projects',
+    '--benchmarkAppPath',
+    '/Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark',
+  ];
+}
+
+function descriptionAndFlags(cmd) {
+  const flat = xs => x => xs.join(x);
+  const flatCmd = flat(cmd);
+  const blankSpace = ' ';
   return {
     description: `
 Move the benchmark 'app' to live next to kibana, since the app is destructive
 
 Example(s):
 
-node scripts/perf_test_ftr.js  --verbose --kibanaParentPath /Users/tre/development/projects --benchmarkAppPath /Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark
+${flatCmd(blankSpace)}
 
-node scripts/perf_test_ftr.js  --verbose --kibanaParentPath /Users/tre/development/projects --benchmarkAppPath /Users/tre/development/projects/kibana/src/dev/perf_test_ftr/benchmark --externalDirName perf_test_ftr_external
+${flatCmd(blankSpace)} --externalDirName perf_test_ftr_external
 
 
 # Both of the above will copy into /Users/tre/development/projects/perf_test_ftr_external/benchmark
@@ -59,9 +74,8 @@ node scripts/perf_test_ftr.js  --verbose --kibanaParentPath /Users/tre/developme
 function relocate(externalDirName) {
   return kibanaParentPath => benchmarkAppPath => log => {
     const dest = `${kibanaParentPath}/${externalDirName}/benchmark`;
-    log.verbose(
-      `\n### Relocating 'benchmark app',\nfrom: \n\t${benchmarkAppPath}\nto: \n\t${dest}`
-    );
+    const msg = `\n### Relocating 'benchmark app',\nfrom: \n\t${benchmarkAppPath}\nto: \n\t${dest}`;
+    log.verbose(msg);
 
     (async _ => await jetpack.copyAsync(benchmarkAppPath, dest, { overwrite: true }))();
   };
